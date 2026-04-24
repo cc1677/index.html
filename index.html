@@ -1,17 +1,103 @@
 <!DOCTYPE html>
 <html>
-<body style="background:#111;color:white;text-align:center;font-family:sans-serif;">
+<head>
+<title>Premium Key System</title>
 
-<h2>Premium Key</h2>
+<style>
+body {
+  margin: 0;
+  background: #0d0f14;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
 
-<input id="username" placeholder="Roblox Username">
-<br><br>
+.card {
+  background: #1a1d25;
+  padding: 30px;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+}
 
-<button onclick="getKey()">Get Key</button>
+h2 {
+  margin-bottom: 20px;
+}
 
-<p id="out"></p>
+input {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: #11141a;
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  margin-top: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.get {
+  background: #4a6cff;
+  color: white;
+}
+
+.buy {
+  background: #2ecc71;
+  color: white;
+}
+
+.copy {
+  background: #888;
+  color: white;
+}
+
+.status {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.keybox {
+  margin-top: 10px;
+  background: #11141a;
+  padding: 10px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Premium Access</h2>
+
+  <input id="username" placeholder="Roblox Username">
+
+  <button class="get" onclick="getKey()">Get Key</button>
+  <button class="buy" onclick="buy()">Buy Premium</button>
+
+  <div class="keybox" id="keybox" style="display:none;"></div>
+  <button class="copy" onclick="copyKey()" style="display:none;" id="copyBtn">Copy Key</button>
+
+  <div class="status" id="status">Waiting...</div>
+</div>
 
 <script>
+let currentKey = "";
+
 async function getUserId(username) {
   const res = await fetch("https://users.roblox.com/v1/usernames/users", {
     method: "POST",
@@ -25,11 +111,19 @@ async function getUserId(username) {
 
 async function getKey() {
   const username = document.getElementById("username").value;
-  if (!username) return;
+  const status = document.getElementById("status");
+
+  if (!username) {
+    status.innerText = "Enter username";
+    return;
+  }
+
+  status.innerText = "Checking...";
 
   const userId = await getUserId(username);
+
   if (!userId) {
-    out.innerText = "Invalid username";
+    status.innerText = "Invalid username";
     return;
   }
 
@@ -37,11 +131,28 @@ async function getKey() {
   const data = await res.json();
 
   if (!data || !data.purchased) {
-    out.innerText = "❌ You have not bought premium";
+    status.innerText = "❌ You haven't bought premium";
     return;
   }
 
-  out.innerText = "Your Key: " + data.key;
+  currentKey = data.key;
+
+  document.getElementById("keybox").style.display = "block";
+  document.getElementById("copyBtn").style.display = "block";
+  document.getElementById("keybox").innerText = currentKey;
+
+  status.innerText = "✅ Key loaded";
+}
+
+function copyKey() {
+  if (!currentKey) return;
+
+  navigator.clipboard.writeText(currentKey);
+  document.getElementById("status").innerText = "Copied!";
+}
+
+function buy() {
+  window.location.href = "https://www.roblox.com/game-pass/YOUR_ID";
 }
 </script>
 
