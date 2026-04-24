@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Premium Key System</title>
+<title>Premium Key</title>
 </head>
 
-<body style="background:#111;color:white;text-align:center;font-family:Arial;">
+<body style="background:#0d0f14;color:white;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;">
 
-<h2>Premium Key System</h2>
+<div style="background:#1a1d25;padding:30px;border-radius:12px;width:320px;text-align:center;box-shadow:0 0 20px rgba(0,0,0,0.5);">
 
-<input id="userid" placeholder="Enter Roblox UserId">
+<h2>Premium Key</h2>
+
+<input id="username" placeholder="Roblox Username" style="width:100%;padding:10px;border:none;border-radius:6px;margin-bottom:10px;">
+
+<button onclick="getKey()" style="width:100%;padding:12px;background:#4a6cff;border:none;border-radius:6px;color:white;">
+Get Key
+</button>
+
 <br><br>
 
-<button onclick="getKey()">Get My Key</button>
+<button onclick="buy()" style="width:100%;padding:12px;background:#2ecc71;border:none;border-radius:6px;color:white;">
+Buy Premium
+</button>
 
-<p id="out"></p>
+<p id="out" style="margin-top:15px;"></p>
+
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
@@ -32,20 +43,41 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 function generateKey() {
-  return "XXXX-XXXX-XXXX-XXXX-XXXX".replace(/X/g, () =>
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]
+  return "XXXX-XXXX-XXXX-XXXX-XXXX".replace(/X,g, () =>
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random()*36)]
   );
 }
 
-window.getKey = async function() {
-  const userId = document.getElementById("userid").value;
+async function getUserId(username) {
+  const res = await fetch("https://users.roblox.com/v1/usernames/users", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      usernames: [username],
+      excludeBannedUsers: true
+    })
+  });
 
-  if (!userId) {
-    document.getElementById("out").innerText = "Enter UserId";
+  const data = await res.json();
+  return data.data[0]?.id;
+}
+
+window.getKey = async function() {
+  const username = document.getElementById("username").value;
+
+  if (!username) {
+    document.getElementById("out").innerText = "Enter username";
     return;
   }
 
-  const ref = doc(db, "users", userId);
+  const userId = await getUserId(username);
+
+  if (!userId) {
+    document.getElementById("out").innerText = "Invalid username";
+    return;
+  }
+
+  const ref = doc(db, "users", String(userId));
   const snap = await getDoc(ref);
 
   if (snap.exists()) {
@@ -58,6 +90,10 @@ window.getKey = async function() {
   await setDoc(ref, { key });
 
   document.getElementById("out").innerText = "Your Key: " + key;
+};
+
+window.buy = function() {
+  window.location.href = "https://www.roblox.com/game-pass/YOUR_ID";
 };
 </script>
 
