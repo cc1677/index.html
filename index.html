@@ -1,100 +1,48 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Premium Key</title>
-</head>
-
-<body style="background:#0d0f14;color:white;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;">
-
-<div style="background:#1a1d25;padding:30px;border-radius:12px;width:320px;text-align:center;box-shadow:0 0 20px rgba(0,0,0,0.5);">
+<body style="background:#111;color:white;text-align:center;font-family:sans-serif;">
 
 <h2>Premium Key</h2>
 
-<input id="username" placeholder="Roblox Username" style="width:100%;padding:10px;border:none;border-radius:6px;margin-bottom:10px;">
-
-<button onclick="getKey()" style="width:100%;padding:12px;background:#4a6cff;border:none;border-radius:6px;color:white;">
-Get Key
-</button>
-
+<input id="username" placeholder="Roblox Username">
 <br><br>
 
-<button onclick="buy()" style="width:100%;padding:12px;background:#2ecc71;border:none;border-radius:6px;color:white;">
-Buy Premium
-</button>
+<button onclick="getKey()">Get Key</button>
 
-<p id="out" style="margin-top:15px;"></p>
+<p id="out"></p>
 
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC7R__hpIsQctYv1nvFa4y0fX7pRCpFZBs",
-  authDomain: "key-premium-8db39.firebaseapp.com",
-  projectId: "key-premium-8db39",
-  storageBucket: "key-premium-8db39.firebasestorage.app",
-  messagingSenderId: "1045163288407",
-  appId: "1:1045163288407:web:492b6f204fb37d6de74012"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-function generateKey() {
-  return "XXXX-XXXX-XXXX-XXXX-XXXX".replace(/X,g, () =>
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random()*36)]
-  );
-}
-
+<script>
 async function getUserId(username) {
   const res = await fetch("https://users.roblox.com/v1/usernames/users", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      usernames: [username],
-      excludeBannedUsers: true
-    })
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ usernames:[username] })
   });
 
   const data = await res.json();
   return data.data[0]?.id;
 }
 
-window.getKey = async function() {
+async function getKey() {
   const username = document.getElementById("username").value;
-
-  if (!username) {
-    document.getElementById("out").innerText = "Enter username";
-    return;
-  }
+  if (!username) return;
 
   const userId = await getUserId(username);
-
   if (!userId) {
-    document.getElementById("out").innerText = "Invalid username";
+    out.innerText = "Invalid username";
     return;
   }
 
-  const ref = doc(db, "users", String(userId));
-  const snap = await getDoc(ref);
+  const res = await fetch("https://key-premium-8db39-default-rtdb.firebaseio.com/users/" + userId + ".json");
+  const data = await res.json();
 
-  if (snap.exists()) {
-    document.getElementById("out").innerText = "Your Key: " + snap.data().key;
+  if (!data || !data.purchased) {
+    out.innerText = "❌ You have not bought premium";
     return;
   }
 
-  const key = generateKey();
-
-  await setDoc(ref, { key });
-
-  document.getElementById("out").innerText = "Your Key: " + key;
-};
-
-window.buy = function() {
-  window.location.href = "https://www.roblox.com/game-pass/YOUR_ID";
-};
+  out.innerText = "Your Key: " + data.key;
+}
 </script>
 
 </body>
