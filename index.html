@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Premium Key System</title>
+</head>
+
+<body style="background:#111;color:white;text-align:center;font-family:Arial;">
+
+<h2>Premium Key System</h2>
+
+<input id="userid" placeholder="Enter Roblox UserId">
+<br><br>
+
+<button onclick="getKey()">Get My Key</button>
+
+<p id="out"></p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC7R__hpIsQctYv1nvFa4y0fX7pRCpFZBs",
+  authDomain: "key-premium-8db39.firebaseapp.com",
+  projectId: "key-premium-8db39",
+  storageBucket: "key-premium-8db39.firebasestorage.app",
+  messagingSenderId: "1045163288407",
+  appId: "1:1045163288407:web:492b6f204fb37d6de74012"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function generateKey() {
+  return "XXXX-XXXX-XXXX-XXXX-XXXX".replace(/X/g, () =>
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]
+  );
+}
+
+window.getKey = async function() {
+  const userId = document.getElementById("userid").value;
+
+  if (!userId) {
+    document.getElementById("out").innerText = "Enter UserId";
+    return;
+  }
+
+  const ref = doc(db, "users", userId);
+  const snap = await getDoc(ref);
+
+  if (snap.exists()) {
+    document.getElementById("out").innerText = "Your Key: " + snap.data().key;
+    return;
+  }
+
+  const key = generateKey();
+
+  await setDoc(ref, { key });
+
+  document.getElementById("out").innerText = "Your Key: " + key;
+};
+</script>
+
+</body>
+</html>
